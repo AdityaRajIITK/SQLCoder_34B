@@ -1,0 +1,10 @@
+sqlalchemy
+psycopg2
+torch 
+transformers 
+# bitsandbytes  # Commented out for macOS compatibility - causes issues on Apple Silicon
+accelerate 
+sqlparse
+psutil
+pandas
+jupyter
