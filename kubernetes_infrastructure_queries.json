@@ -1,0 +1,310 @@
+[
+  {
+    "question": "Show the number of nodes created per day",
+    "gen_query": "SELECT n.node_name, COUNT(*) AS num_nodes, DATE_TRUNC('day', n.created_at) AS creation_date FROM nodedata n GROUP BY n.node_name, creation_date ORDER BY creation_date NULLS LAST"
+  },
+  {
+    "question": "How many pods have current state running?",
+    "gen_query": "SELECT COUNT(*) FROM poddata pd WHERE LOWER(pd.state) = 'running'"
+  },
+  {
+    "question": "How many nodes are there per cluster?",
+    "gen_query": "SELECT n.cluster_name, COUNT(n.node_id) AS node_count FROM nodedata n GROUP BY n.cluster_name ORDER BY n.cluster_name NULLS LAST"
+  },
+  {
+    "question": "What are the account id of the products that have category as 'COMPUTE-RI' and subcategory as 'H200-RI' in the month of April 2025?",
+    "gen_query": "SELECT cd.account_id FROM costs_data cd WHERE cd.category = 'COMPUTE-RI' AND cd.subcategory = 'H200-RI' AND cd.date_day LIKE '2025-04-%'"
+  },
+  {
+    "question": "Show me the clusters that have more than 5 nodes, grouped by platform",
+    "gen_query": "SELECT pd.cluster_name, COUNT(pd.node_name) AS node_count, pd.platform FROM poddata pd GROUP BY pd.cluster_name, pd.platform HAVING COUNT(pd.node_name) > 5 ORDER BY pd.cluster_name, pd.platform NULLS LAST"
+  },
+  {
+    "question": "From how many projects did the last time we fetched metadata lies in last month",
+    "gen_query": "SELECT COUNT(DISTINCT pd.project_id) FROM projectdata pd WHERE pd.last_fetched_time >= (CURRENT_DATE - INTERVAL '1 month') AND pd.last_fetched_time < CURRENT_DATE"
+  },
+  {
+    "question": "What is the distribution of instance types?",
+    "gen_query": "SELECT n.instance_type, COUNT(*) AS COUNT FROM nodedata n GROUP BY n.instance_type ORDER BY n.instance_type NULLS LAST"
+  },
+  {
+    "question": "What are all the nodes in the 'sensei-eks01-prod-cluster' cluster?How many pods are currently in the 'Running' state?",
+    "gen_query": "SELECT n.node_name, COUNT(p.pod_id) AS running_pods FROM nodedata n JOIN poddata p ON n.node_name = p.node_name WHERE n.cluster_name ='sensei-eks01-prod-cluster' AND p.state = 'Running' GROUP BY n.node_name"
+  },
+  {
+    "question": "List all pods that have terminated in the last 24 hours.",
+    "gen_query": "SELECT pd.pod_id, pd.name, pd.namespace, pd.project_id, pd.initiative_id, pd.cluster_name, pd.start_time, pd.end_time, pd.is_terminated FROM poddata pd WHERE pd.is_terminated = TRUE AND pd.end_time >= (CURRENT_TIMESTAMP - INTERVAL '24 hours') ORDER BY pd.end_time DESC NULLS LAST"
+  },
+  {
+    "question": "What is the average CPU utilization per pod over the past week?",
+    "gen_query": "SELECT m.pod_id, AVG(m.dcgm_fi_dev_gpu_util) AS average_gpu_utilization FROM metrics m WHERE m.metric_timestamp >= (CURRENT_DATE - interval '7 days') GROUP BY m.pod_id ORDER BY m.pod_id NULLS LAST"
+  },
+  {
+    "question": "Which pods have GPU utilization above 80%?",
+    "gen_query": "SELECT m.pod_id, m.pod_name, m.metric_timestamp, m.dcgm_fi_dev_gpu_util FROM metrics m WHERE m.dcgm_fi_dev_gpu_util > 80"
+  },
+  {
+    "question": "Identify pods with memory usage exceeding 90%.",
+    "gen_query": "SELECT pd.pod_id, pd.name, pd.memory_mb FROM poddata pd WHERE pd.memory_mb > 90"
+  },
+  {
+    "question": "How many pods were initiated by each project?",
+    "gen_query": "SELECT pd.project_id, COUNT(pd.pod_id) AS number_of_pods FROM poddata pd GROUP BY pd.project_id ORDER BY number_of_pods DESC NULLS LAST"
+  },
+  {
+    "question": "List pods that have not reported metrics in the last 2 hours.",
+    "gen_query": "SELECT pd.pod_id, pd.name, pd.last_metric_received_time FROM poddata pd WHERE pd.last_metric_received_time < CURRENT_TIMESTAMP() - INTERVAL '2 hours' ORDER BY pd.last_metric_received_time NULLS LAST"
+  },
+  {
+    "question": "Which pods have been running for more than 24 hours?",
+    "gen_query": "SELECT pd.pod_id, pd.name, pd.start_time FROM poddata pd WHERE pd.start_time < CURRENT_TIMESTAMP() - INTERVAL '24 hours' AND pd.is_terminated = FALSE"
+  },
+  {
+    "question": "What is the distribution of pod states across all clusters?",
+    "gen_query": "SELECT pd.cluster_name, pd.state, COUNT(*) AS count FROM poddata pd GROUP BY pd.cluster_name, pd.state ORDER BY pd.cluster_name, pd.state NULLS LAST"
+  },
+  {
+    "question": "Identify pods with the highest GPU count.",
+    "gen_query": "SELECT pd.pod_id, pd.gpu_count FROM poddata pd ORDER BY pd.gpu_count DESC NULLS LAST LIMIT 1"
+  },
+  {
+    "question": "How many nodes exist in each cluster?",
+    "gen_query": "SELECT n.cluster_name, COUNT(n.node_id) AS node_count FROM nodedata n GROUP BY n.cluster_name ORDER BY n.cluster_name NULLS LAST"
+  },
+  {
+    "question": "List nodes created per day over the last month.",
+    "gen_query": "SELECT date_trunc('day', n.created_at) AS creation_date, COUNT(*) AS num_nodes FROM nodedata n WHERE date_part('year', n.created_at) = date_part('year', CURRENT_DATE) AND date_part('month', n.created_at) = date_part('month', CURRENT_DATE) - 1 GROUP BY creation_date ORDER BY creation_date NULLS LAST"
+  },
+  {
+    "question": "Which nodes have the highest CPU capacity?",
+    "gen_query": "SELECT n.node_name, n.cluster_name, n.instance_type, i.cpu_quota FROM nodedata n JOIN instance_type_metadata i ON n.instance_type = i.instance_type ORDER BY i.cpu_quota DESC NULLS LAST LIMIT 1"
+  },
+  {
+    "question": "Identify nodes with memory greater than 64GB.",
+    "gen_query": "SELECT pd.node_name FROM poddata pd WHERE pd.memory_mb > 64000"
+  },
+  {
+    "question": "What is the average number of nodes per platform?",
+    "gen_query": "SELECT p.platform, AVG(n.node_count) AS average_nodes FROM (SELECT pd.platform, COUNT(DISTINCT pd.node_name) AS node_count FROM poddata pd GROUP BY pd.platform) AS n GROUP BY p.platform"
+  },
+  {
+    "question": "List nodes that have not been updated in the last week.",
+    "gen_query": "SELECT pd.node_name FROM poddata pd WHERE pd.snapshot_time < CURRENT_TIMESTAMP() - INTERVAL '1 week' ORDER BY pd.node_name NULLS LAST"
+  },
+  {
+    "question": "Which nodes are currently underutilized?",
+    "gen_query": "SELECT pd.node_name, pd.cpu_count, pd.memory_mb, itm.cpu_count, itm.memory_mb FROM poddata pd JOIN nodedata nd ON pd.node_name = nd.node_name JOIN instance_type_metadata itm ON nd.instance_type = itm.instance_type WHERE pd.cpu_count < itm.cpu_count OR pd.memory_mb < itm.memory_mb"
+  },
+  {
+    "question": "How many nodes were decommissioned last month?",
+    "gen_query": "SELECT COUNT(*) FROM poddata pd WHERE pd.is_terminated = TRUE AND EXTRACT(MONTH FROM pd.snapshot_time) = EXTRACT(MONTH FROM CURRENT_DATE - INTERVAL '1 month') AND EXTRACT(YEAR FROM pd.snapshot_time) = EXTRACT(YEAR FROM CURRENT_DATE - INTERVAL '1 month')"
+  },
+  {
+    "question": "Identify nodes with the most GPU resources.",
+    "gen_query": "SELECT n.node_name, n.cluster_name, i.gpu_quota FROM nodedata n JOIN instance_type_metadata i ON n.instance_type = i.instance_type ORDER BY i.gpu_quota DESC NULLS LAST LIMIT 1"
+  },
+  {
+    "question": "What is the distribution of node instance types?",
+    "gen_query": "SELECT n.instance_type, COUNT(*) AS COUNT FROM nodedata n GROUP BY n.instance_type ORDER BY COUNT DESC NULLS LAST"
+  },
+  {
+    "question": "List all clusters with more than 5 nodes.",
+    "gen_query": "SELECT n.cluster_name FROM nodedata n GROUP BY n.cluster_name HAVING COUNT(n.node_id) > 5 ORDER BY n.cluster_name NULLS LAST"
+  },
+  {
+    "question": "Which clusters have the highest number of running pods?",
+    "gen_query": "SELECT pd.cluster_name, COUNT(pd.pod_id) AS num_pods FROM poddata pd WHERE pd.is_terminated = FALSE GROUP BY pd.cluster_name ORDER BY num_pods DESC NULLS LAST LIMIT 5"
+  },
+  {
+    "question": "Identify clusters with the most GPU resources.",
+    "gen_query": "SELECT pd.cluster_name, SUM(pd.gpu_count) AS total_gpu_count FROM poddata pd GROUP BY pd.cluster_name ORDER BY total_gpu_count DESC NULLS LAST LIMIT 5"
+  },
+  {
+    "question": "What is the average CPU utilization per cluster?",
+    "gen_query": "SELECT m.cluster_name, AVG(m.dcgm_fi_dev_gpu_util) AS average_gpu_utilization FROM metrics m GROUP BY m.cluster_name"
+  },
+  {
+    "question": "List clusters that have not reported metrics in the last 24 hours.",
+    "gen_query": "SELECT pd.cluster_name FROM poddata pd WHERE pd.last_metric_received_time < CURRENT_TIMESTAMP - INTERVAL '24 hours' ORDER BY pd.cluster_name NULLS LAST"
+  },
+  {
+    "question": "Which clusters have nodes with memory greater than 128GB?",
+    "gen_query": "SELECT DISTINCT n.cluster_name FROM nodedata n JOIN instance_type_metadata i ON n.instance_type = i.instance_type WHERE i.memory_mb > 128 ORDER BY n.cluster_name NULLS LAST"
+  },
+  {
+    "question": "How many clusters are associated with each platform?",
+    "gen_query": "SELECT p.platform, COUNT(DISTINCT p.cluster_name) AS cluster_count FROM poddata p GROUP BY p.platform ORDER BY cluster_count DESC NULLS LAST"
+  },
+  {
+    "question": "Identify clusters with the highest number of terminated pods.",
+    "gen_query": "WITH cluster_pod_counts AS (SELECT pd.cluster_name, COUNT(pd.pod_id) AS num_terminated_pods FROM poddata pd WHERE pd.is_terminated = TRUE GROUP BY pd.cluster_name) SELECT cpc.cluster_name, cpc.num_terminated_pods FROM cluster_pod_counts cpc ORDER BY cpc.num_terminated_pods DESC NULLS LAST LIMIT 5"
+  },
+  {
+    "question": "What is the distribution of clusters across different regions?",
+    "gen_query": "SELECT c.cluster_name, COUNT(*) AS cluster_count FROM poddata p JOIN nodedata n ON p.node_name = n.node_name GROUP BY c.cluster_name ORDER BY cluster_count DESC NULLS LAST"
+  },
+  {
+    "question": "List clusters with the most diverse instance types.",
+    "gen_query": "WITH cluster_instance_types AS (SELECT n.cluster_name, n.instance_type, COUNT(*) AS type_count FROM nodedata n GROUP BY n.cluster_name, n.instance_type), cluster_type_counts AS (SELECT c.cluster_name, COUNT(*) AS type_count FROM cluster_instance_types c GROUP BY c.cluster_name) SELECT cit.cluster_name, cit.instance_type, cit.type_count FROM cluster_instance_types cit JOIN cluster_type_counts ctc ON cit.cluster_name = ctc.cluster_name ORDER BY ctc.type_count DESC NULLS LAST LIMIT 5"
+  },
+  {
+    "question": "How many projects are associated with each initiative?",
+    "gen_query": "SELECT i.initiative_name, COUNT(DISTINCT p.project_id) AS project_count FROM projectdata p JOIN initiativedata i ON p.initiative_name = i.initiative_name GROUP BY i.initiative_name ORDER BY project_count DESC NULLS LAST"
+  },
+  {
+    "question": "List projects with GPU quota exceeding 100.",
+    "gen_query": "SELECT pd.project_name FROM projectdata pd WHERE pd.gpu_quota > 100 ORDER BY pd.project_name NULLS LAST"
+  },
+  {
+    "question": "Which initiatives have the highest CPU quota?",
+    "gen_query": "SELECT i.initiative_name, i.cpu_quota FROM initiativedata i ORDER BY i.cpu_quota DESC NULLS LAST LIMIT 1"
+  },
+  {
+    "question": "Identify projects that have not fetched metadata in the last month.",
+    "gen_query": "SELECT pd.project_id, pd.project_name FROM projectdata pd WHERE pd.last_fetched_time < (CURRENT_DATE - INTERVAL '1 month') ORDER BY pd.project_id NULLS LAST"
+  },
+  {
+    "question": "What is the average memory quota per project?",
+    "gen_query": "SELECT pd.project_id, AVG(pd.memory_quota_mb) AS average_memory_quota FROM projectdata pd GROUP BY pd.project_id ORDER BY pd.project_id NULLS LAST"
+  },
+  {
+    "question": "List initiatives created in the last 30 days.",
+    "gen_query": "SELECT DISTINCT i.initiative_name FROM initiativedata i WHERE i.created_at > CURRENT_DATE - INTERVAL '30 days' ORDER BY i.created_at DESC"
+  },
+  {
+    "question": "Which projects have the highest number of running pods?",
+    "gen_query": "SELECT pd.project_name, COUNT(pd.pod_id) AS running_pods FROM poddata pd WHERE pd.is_terminated = FALSE GROUP BY pd.project_name ORDER BY running_pods DESC NULLS LAST LIMIT 5"
+  },
+  {
+    "question": "Identify initiatives with the most associated nodes.",
+    "gen_query": "SELECT i.initiative_name, COUNT(DISTINCT i.nodepool_id) AS node_count FROM initiativedata i GROUP BY i.initiative_name ORDER BY node_count DESC NULLS LAST LIMIT 1"
+  },
+  {
+    "question": "How many projects are using each node pool?",
+    "gen_query": "SELECT pd.nodepool_id, COUNT(DISTINCT pd.project_id) AS project_count FROM projectdata pd GROUP BY pd.nodepool_id ORDER BY pd.nodepool_id NULLS LAST"
+  },
+  {
+    "question": "List projects with the most diverse cluster associations.",
+    "gen_query": "WITH project_clusters AS (SELECT pd.project_id, COUNT(DISTINCT pd.cluster_name) AS cluster_count FROM poddata pd GROUP BY pd.project_id) SELECT pc.project_id, pc.cluster_count FROM project_clusters pc ORDER BY pc.cluster_count DESC NULLS LAST LIMIT 1"
+  },
+  {
+    "question": "What are the account IDs of products categorized as 'COMPUTE-RI' and subcategorized as 'H200-RI' for April 2025?",
+    "gen_query": "SELECT DISTINCT cd.account_id FROM costs_data cd WHERE cd.category = 'COMPUTE-RI' AND cd.subcategory = 'H200-RI' AND cd.date_day LIKE '2025-04-%'"
+  },
+  {
+    "question": "List total spend per account ID for the last quarter.",
+    "gen_query": "SELECT cd.account_id, SUM(cd.total_spend) AS total_spend FROM costs_data cd WHERE cd.date_day >= (CURRENT_DATE - INTERVAL '3 months') GROUP BY cd.account_id ORDER BY cd.account_id NULLS LAST"
+  },
+  {
+    "question": "Which products incurred the highest costs in May 2025?",
+    "gen_query": "SELECT cd.product_name, SUM(cd.total_spend) AS total_spend FROM costs_data cd WHERE cd.date_day >= '2025-05-01' AND cd.date_day < '2025-06-01' GROUP BY cd.product_name ORDER BY total_spend DESC NULLS LAST LIMIT 5"
+  },
+  {
+    "question": "Identify regions with the highest total usage hours.",
+    "gen_query": "SELECT c.region, SUM(c.total_usage_hours) AS total_usage FROM costs_data c GROUP BY c.region ORDER BY total_usage DESC NULLS LAST LIMIT 5"
+  },
+  {
+    "question": "What is the average cost per instance type?",
+    "gen_query": "SELECT it.instance_type, AVG(c.total_spend) AS average_cost FROM costs_data c JOIN instance_type_metadata it ON c.instance_type = it.instance_type GROUP BY it.instance_type ORDER BY it.instance_type NULLS LAST"
+  },
+  {
+    "question": "List accounts with spending above $10,000 in the last month.",
+    "gen_query": "SELECT c.account_id FROM costs_data c WHERE c.total_spend > 10000 AND c.date_day >= (CURRENT_DATE - INTERVAL '1 month') ORDER BY c.account_id NULLS LAST"
+  },
+  {
+    "question": "Which subcategories have the highest total spend?",
+    "gen_query": "SELECT c.subcategory, SUM(c.total_spend) AS total_spend FROM costs_data c GROUP BY c.subcategory ORDER BY total_spend DESC NULLS LAST LIMIT 5"
+  },
+  {
+    "question": "Identify products with zero usage hours but incurred costs.",
+    "gen_query": "SELECT cd.product_name, cd.total_spend FROM costs_data cd WHERE cd.total_usage_hours = 0 AND cd.total_spend > 0 ORDER BY cd.product_name NULLS LAST"
+  },
+  {
+    "question": "What is the distribution of costs across different environments?",
+    "gen_query": "SELECT c.env, c.total_spend FROM costs_data c ORDER BY c.total_spend NULLS LAST"
+  },
+  {
+    "question": "List the top 5 most expensive instance types.",
+    "gen_query": "SELECT it.instance_type, SUM(c.total_spend) AS total_spend FROM costs_data c JOIN instance_type_metadata it ON c.instance_type = it.instance_type GROUP BY it.instance_type ORDER BY total_spend DESC NULLS LAST LIMIT 5"
+  },
+  {
+    "question": "What is the distribution of instance types?",
+    "gen_query": "SELECT n.instance_type, COUNT(*) AS COUNT FROM nodedata n GROUP BY n.instance_type ORDER BY n.instance_type NULLS LAST"
+  },
+  {
+    "question": "List instance types with more than 8 GPUs.",
+    "gen_query": "SELECT it.instance_type FROM instance_type_metadata it WHERE it.gpu_count > 8 ORDER BY it.instance_type NULLS LAST"
+  },
+  {
+    "question": "Identify instance types with CPU count exceeding 64.",
+    "gen_query": "SELECT it.instance_type FROM instance_type_metadata it WHERE it.cpu_count > 64 ORDER BY it.instance_type NULLS LAST"
+  },
+  {
+    "question": "Which instance types have memory greater than 256GB?",
+    "gen_query": "SELECT DISTINCT it.instance_type FROM instance_type_metadata it WHERE it.memory_mb > 256 ORDER BY it.instance_type NULLS LAST"
+  },
+  {
+    "question": "What is the average GPU count across all instance types?",
+    "gen_query": "SELECT AVG(igt.gpu_count) AS average_gpu_count FROM instance_type_metadata igt"
+  },
+  {
+    "question": "List instance types used in the 'runai' platform.",
+    "gen_query": "SELECT DISTINCT n.instance_type FROM nodedata n WHERE n.platform = 'runai' ORDER BY n.instance_type NULLS LAST"
+  },
+  {
+    "question": "Identify instance types with the highest CPU to GPU ratio.",
+    "gen_query": "SELECT it.instance_type, SUM(it.cpu_count) / NULLIF(SUM(it.gpu_count), 0) AS cpu_gpu_ratio FROM instance_type_metadata it GROUP BY it.instance_type ORDER BY cpu_gpu_ratio DESC NULLS LAST LIMIT 1"
+  },
+  {
+    "question": "What is the most commonly used instance type?",
+    "gen_query": "SELECT n.instance_type, COUNT(*) AS usage_count FROM nodedata n GROUP BY n.instance_type ORDER BY usage_count DESC LIMIT 1"
+  },
+  {
+    "question": "List instance types that are no longer in use.",
+    "gen_query": "SELECT n.instance_type FROM nodedata n WHERE n.instance_type NOT IN (SELECT c.instance_type FROM costs_data c ORDER BY c.data_creation_date DESC LIMIT 1)"
+  },
+  {
+    "question": "Which instance types are associated with the highest costs?",
+    "gen_query": "WITH daily_costs AS (SELECT c.instance_type, c.date_day, SUM(c.total_spend) AS total_spend FROM costs_data c WHERE c.date_day = CURRENT_DATE GROUP BY c.instance_type, c.date_day), ranked_costs AS (SELECT dc.instance_type, dc.total_spend, RANK() OVER (ORDER BY dc.total_spend DESC) AS rank FROM daily_costs dc) SELECT rc.instance_type, rc.total_spend FROM ranked_costs rc WHERE rc.rank = 1"
+  },
+  {
+    "question": "Which pods have the highest GPU utilization?",
+    "gen_query": "SELECT m.pod_id, m.pod_name, m.dcgm_fi_dev_gpu_util FROM metrics m ORDER BY m.dcgm_fi_dev_gpu_util DESC NULLS LAST LIMIT 5"
+  },
+  {
+    "question": "Identify pods with thermal violations.",
+    "gen_query": "SELECT m.pod_id, m.pod_name, m.cluster_name, m.initiative_name, m.project_id, m.project_name, m.metric_timestamp, m.dcgm_fi_dev_thermal_violation FROM metrics m WHERE m.dcgm_fi_dev_thermal_violation > 0"
+  },
+  {
+    "question": "List pods with power violations.",
+    "gen_query": "SELECT m.pod_id, m.pod_name, m.cluster_name, m.initiative_name, m.project_id, m.project_name, m.metric_timestamp, m.dcgm_fi_dev_power_violation FROM metrics m WHERE m.dcgm_fi_dev_power_violation > 0"
+  },
+  {
+    "question": "Which pods have low utilization violations?",
+    "gen_query": "SELECT m.pod_id, m.pod_name, m.initiative_name, m.project_id, m.cluster_name, m.metric_timestamp, m.dcgm_fi_dev_low_util_violation FROM metrics m WHERE m.dcgm_fi_dev_low_util_violation > 0"
+  },
+  {
+    "question": "Identify pods with reliability issues.",
+    "gen_query": "SELECT m.pod_id, m.pod_name, m.initiative_name, m.project_id, m.cluster_name, m.metric_timestamp, m.dcgm_fi_dev_reliability_violation FROM metrics m WHERE m.dcgm_fi_dev_reliability_violation > 0.5 ORDER BY m.pod_id NULLS LAST"
+  },
+  {
+    "question": "What is the average SM occupancy across all pods?",
+    "gen_query": "SELECT AVG(m.dcgm_fi_prof_sm_occupancy) AS average_sm_occupancy FROM metrics m"
+  },
+  {
+    "question": "List pods with the highest DRAM activity.",
+    "gen_query": "SELECT m.pod_id, m.pod_name, m.metric_timestamp, m.dcgm_fi_prof_dram_active FROM metrics m ORDER BY m.dcgm_fi_prof_dram_active DESC NULLS LAST LIMIT 10"
+  },
+  {
+    "question": "Which pods have the highest graphics engine activity.",
+    "gen_query": "SELECT m.pod_id, m.pod_name, m.initiative_name, m.project_name, m.cluster_name, m.metric_timestamp, m.dcgm_fi_prof_gr_engine_active FROM metrics m ORDER BY m.dcgm_fi_prof_gr_engine_active DESC NULLS LAST LIMIT 5"
+  },
+  {
+    "question": "Identify pods with the highest tensor core activity.",
+    "gen_query": "SELECT m.pod_id, m.pod_name, m.initiative_name, m.project_id, m.cluster_name, m.metric_timestamp, m.dcgm_fi_prof_pipe_tensor_active FROM metrics m ORDER BY m.dcgm_fi_prof_pipe_tensor_active DESC NULLS LAST LIMIT 1"
+  },
+  {
+    "question": "What is the average GPU temperature across all pods?",
+    "gen_query": "SELECT AVG(m.dcgm_fi_dev_gpu_temp) AS average_gpu_temp FROM metrics m"
+  }
+]
