@@ -8,6 +8,7 @@ A macOS-compatible implementation of SQLCoder for generating SQL queries from na
 - 🧠 **AI-Powered SQL Generation**: Uses Llama-3-SQLCoder-8B for accurate SQL query generation
 - 📝 **Jupyter Notebook Interface**: Easy-to-use notebook environment
 - 🚀 **Cross-Platform Device Detection**: Automatically detects and uses MPS (Apple Silicon), CUDA, or CPU
+- 📊 **Basic Visualization**: Simple data visualization from SQL query results
 
 ## Setup
 
@@ -62,6 +63,18 @@ jupyter notebook defog_sqlcoder_colab.ipynb
 question = "What are the top 5 products by total sales quantity?"
 generated_sql = generate_query(question)
 print(generated_sql)
+```
+
+### Basic Visualization
+
+The project includes basic data visualization capabilities:
+
+```python
+from nl_visualization import create_visualization_from_nl
+
+# Generate and visualize data
+result_df = pd.read_sql_query(sql_query, db_engine)
+create_visualization_from_nl("Create a bar chart", result_df)
 ```
 
 ## macOS Compatibility Fixes
